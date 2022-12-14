@@ -2,17 +2,17 @@
     <div class="lift">
       <div 
         class="lift__booth" 
-        :class="status === 'waiting' ? 'wait' : ''"
+        :class="data.status === 'waiting' ? 'wait' : ''"
         :style="{ 
           height: `${boothHeight}px`, 
-          bottom: `${(position * boothHeight) - boothHeight}px`,
+          bottom: `${(data.position * boothHeight) - boothHeight}px`,
           transition: `bottom ${animationDuration}s ease`
         }"
       >
         <div 
           class="lift__booth-label" 
-          :class="status === 'ready' ? 'hide' : ''"
-        >{{ isUp ? '&uarr;' : '&darr;' }} {{ position }}</div>
+          :class="data.status === 'ready' ? 'hide' : ''"
+        >{{ isUp ? '&uarr;' : '&darr;' }} {{ data.position }}</div>
       </div>
     </div>
 </template>
@@ -38,24 +38,32 @@ export default defineComponent({
       type: Number,
       required: true
     },
-    position: {
-      type: Number,
-      required: true
+    data: {
+      type: Object,
+      required: true,
+      position: {
+        type: Number,
+        required: true
+      },
+      status: {
+        type: String,
+        required: true
+      },
+      id: {
+        type: Number,
+        required: true
+      }
     },
-    status: {
-      type: String,
-      required: true
-    }
   },
   watch: {
-    position: function (newVal, oldVal) {
+    "data.position": function (newVal, oldVal) {
       this.animationDuration = Math.abs(oldVal - newVal) + 1;
       this.isUp = newVal > oldVal;
-      this.$emit("setStatus", "moving");
+      this.$emit("setStatus", { ...this.data, status: "moving" });
       setTimeout(() => {
-        this.$emit("setStatus", "waiting");
+        this.$emit("setStatus", { ...this.data, status: "waiting" });
         setTimeout(() => {
-          this.$emit("setStatus", "ready");
+          this.$emit("setStatus", { ...this.data, status: "ready" });
         }, 3000);
       }, this.animationDuration * 1000);
     }

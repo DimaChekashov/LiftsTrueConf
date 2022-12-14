@@ -2,11 +2,10 @@
     <div class="elevator">
       <div class="elevator__lifts">
         <lift 
-          v-for="liftItem in liftsAmount" 
-          :key="liftItem + '-lift'" 
+          v-for="liftItem in lifts" 
+          :key="liftItem.id + '-lift'" 
           :boothHeight="floorHeight"
-          :position="lift.position"
-          :status="lift.status"
+          :data="liftItem"
           @setStatus="setLiftStatus"
         />
       </div>
@@ -22,7 +21,7 @@
             <div class="elevator__title">{{floor}}</div>
             <button 
               class="elevator__btn" 
-              :class="queue.includes(floor) ? 'active' : ''"
+              :class="floorCalledBtns.has(floor) ? 'active' : ''"
               :onClick="() => moveTo(floor)" 
             />
           </div>
@@ -37,13 +36,17 @@ import Lift from "./Lift.vue";
 
 type LiftStatusType = "ready" | "moving" | "waiting";
 
+interface Lift {
+  id: number;
+  status: LiftStatusType;
+  position: number;
+}
+
 interface Data {
   floorHeight: number;
   queue: number[];
-  lift: {
-    status: LiftStatusType;
-    position: number;
-  }
+  lifts: Lift[];
+  floorCalledBtns: Set<number>;
 }
 
 
@@ -54,10 +57,12 @@ export default defineComponent({
     return {
       floorHeight: (window.innerHeight - 30) / this.floors,
       queue: [],
-      lift: {
+      lifts: Array.from({ length: this.liftsAmount }, (_, i) => ({
+        id: i,
         status: "ready",
         position: 1
-      }
+      })),
+      floorCalledBtns: new Set()
     }
   },
   props: {
@@ -67,25 +72,28 @@ export default defineComponent({
     },
     liftsAmount: {
       type: Number,
-      default: 1,
+      default: 3,
     },
   },
   methods: {
     moveTo(position: number) {
-      if(this.lift.position !== position) {
+      if(!this.lifts.some(lift => lift.position === position)) {
+        this.floorCalledBtns.add(position);
         this.queue.push(position);
         this.checkQueue();
       }
     },
     checkQueue() {
-      if (this.lift.status === "ready" && this.queue.length > 0) {
-        this.lift.position = this.queue[0];
+      const liftIndex = this.lifts.findIndex(lift => lift.status === "ready");
+      
+      if (liftIndex !== -1 && this.queue.length > 0) {
+        this.lifts[liftIndex] = { ...this.lifts[liftIndex], position: this.queue.shift()! }
       }
     },
-    setLiftStatus(status: LiftStatusType) {
-      this.lift.status = status;
-      if (status === "waiting") {
-        this.queue.shift()!
+    setLiftStatus(lift: Lift) {
+      this.lifts[lift.id] = lift;
+      if (lift.status === "waiting") {
+        this.floorCalledBtns.delete(lift.position);
       }
       this.checkQueue();
     }
