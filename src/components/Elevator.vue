@@ -22,7 +22,7 @@
             <div class="elevator__title">{{floor}}</div>
             <button 
               class="elevator__btn" 
-              :class="lift.queue.includes(floor) ? 'active' : ''"
+              :class="queue.includes(floor) ? 'active' : ''"
               :onClick="() => moveTo(floor)" 
             />
           </div>
@@ -39,8 +39,8 @@ type LiftStatusType = "ready" | "moving" | "waiting";
 
 interface Data {
   floorHeight: number;
+  queue: number[];
   lift: {
-    queue: number[];
     status: LiftStatusType;
     position: number;
   }
@@ -53,8 +53,8 @@ export default defineComponent({
   data(): Data {
     return {
       floorHeight: (window.innerHeight - 30) / this.floors,
+      queue: [],
       lift: {
-        queue: [],
         status: "ready",
         position: 1
       }
@@ -67,23 +67,23 @@ export default defineComponent({
     },
     liftsAmount: {
       type: Number,
-      default: 2,
+      default: 1,
     },
   },
   methods: {
     moveTo(position: number) {
-      this.lift.queue.push(position);
+      this.queue.push(position);
       this.checkQueue();
     },
     checkQueue() {
-      if (this.lift.status === "ready" && this.lift.queue.length > 0) {
-        this.lift.position = this.lift.queue[0];
+      if (this.lift.status === "ready" && this.queue.length > 0) {
+        this.lift.position = this.queue[0];
       }
     },
     setLiftStatus(status: LiftStatusType) {
       this.lift.status = status;
       if (status === "waiting") {
-        this.lift.queue.shift()!
+        this.queue.shift()!
       }
       this.checkQueue();
     }
