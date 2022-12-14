@@ -1,23 +1,27 @@
 <template>
-  <h2>Lifts</h2>
+  <elevator />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import Elevator from "./components/Elevator.vue";
 
 export default defineComponent({
   name: "App",
-
+  components: { Elevator },
 });
 </script>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 15px;
+  height: 100vh;
 }
 </style>
