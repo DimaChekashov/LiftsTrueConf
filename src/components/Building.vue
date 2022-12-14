@@ -1,6 +1,6 @@
 <template>
-    <div class="elevator">
-      <div class="elevator__lifts">
+    <div class="building">
+      <div class="building__lifts">
         <lift 
           v-for="liftItem in lifts" 
           :key="liftItem.id + '-lift'" 
@@ -10,17 +10,17 @@
         />
       </div>
 
-      <div class="elevator__floors">
+      <div class="building__floors">
         <div 
           v-for="floor in floors" 
-          class="elevator__floor" 
+          class="building__floor" 
           :key="floor + '-floor'" 
           :style="{ 'height': `${floorHeight}px` }"
         >
-          <div class="elevator__controlls">
-            <div class="elevator__title">{{floor}}</div>
+          <div class="building__controlls">
+            <div class="building__title">{{floor}}</div>
             <button 
-              class="elevator__btn" 
+              class="building__btn" 
               :class="floorCalledBtns.has(floor) ? 'active' : ''"
               :onClick="() => moveTo(floor)" 
             />
@@ -49,19 +49,14 @@ interface Data {
   floorCalledBtns: Set<number>;
 }
 
-
 export default defineComponent({
-  name: "Elevator",
+  name: "Building",
   components: { Lift },
   data(): Data {
     return {
       floorHeight: (window.innerHeight - 30) / this.floors,
       queue: [],
-      lifts: Array.from({ length: this.liftsAmount }, (_, i) => ({
-        id: i,
-        status: "ready",
-        position: 1
-      })),
+      lifts: this.getLifts(),
       floorCalledBtns: new Set()
     }
   },
@@ -72,10 +67,38 @@ export default defineComponent({
     },
     liftsAmount: {
       type: Number,
-      default: 3,
+      default: 1,
     },
   },
   methods: {
+    getLifts(): Lift[] {
+      let data = localStorage.getItem("lifts");
+      let option = localStorage.getItem("option");
+
+      if (option !== null && data !== null) {
+        let optionObj: {
+          floors: number;
+          liftsAmount: number;
+        } = JSON.parse(option);
+        if (optionObj.floors === this.floors && optionObj.liftsAmount === this.liftsAmount) {
+          return JSON.parse(data);
+        }
+      }
+
+      return Array.from({ length: this.liftsAmount }, (_, i) => ({
+        id: i,
+        status: "ready",
+        position: 1
+      }))
+    },
+    setLifts() {
+      const lifts = this.lifts.map((item: Lift) => ({ ...item, status: "ready" }));
+      localStorage.setItem("lifts", JSON.stringify(lifts));
+      localStorage.setItem("option", JSON.stringify({
+        floors: this.floors,
+        liftsAmount: this.liftsAmount
+      }))
+    },
     moveTo(position: number) {
       if(!this.lifts.some(lift => lift.position === position)) {
         this.floorCalledBtns.add(position);
@@ -95,6 +118,9 @@ export default defineComponent({
       if (lift.status === "waiting") {
         this.floorCalledBtns.delete(lift.position);
       }
+      if(lift.status === "ready") {
+        this.setLifts();
+      }
       this.checkQueue();
     }
   }
@@ -102,7 +128,7 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.elevator {
+.building {
   display: flex;
   gap: 30px;
   &__floors {
@@ -149,6 +175,8 @@ export default defineComponent({
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid #000000;
+    border-radius: 4px;
     &::after {
       content: "";
       width: 12px;
@@ -159,10 +187,10 @@ export default defineComponent({
       border-radius: 50%;
     }
     &.active {
-      border-color: red;
+      border-color: orange;
       &::after {
-        background-color: red;
-        outline-color: red;
+        background-color: orange;
+        outline-color: orange;
       }
     }
   }

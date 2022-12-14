@@ -1,14 +1,19 @@
 <template>
-  <elevator />
+  <!-- Компонент building
+    Вы можете задать через пропсы кол-во этажей 
+    :floors и количество лифтов :lifts-amount 
+    Значения по умолчанию floors: 5, lifts-amount: 1 
+  -->
+  <building />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Elevator from "./components/Elevator.vue";
+import Building from "./components/Building.vue";
 
 export default defineComponent({
   name: "App",
-  components: { Elevator },
+  components: { Building },
 });
 </script>
 
