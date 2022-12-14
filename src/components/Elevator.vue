@@ -72,8 +72,10 @@ export default defineComponent({
   },
   methods: {
     moveTo(position: number) {
-      this.queue.push(position);
-      this.checkQueue();
+      if(this.lift.position !== position) {
+        this.queue.push(position);
+        this.checkQueue();
+      }
     },
     checkQueue() {
       if (this.lift.status === "ready" && this.queue.length > 0) {
